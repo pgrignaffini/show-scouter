@@ -1,26 +1,35 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { trpc } from "../utils/trpc";
-import type { inferProcedureOutput } from "@trpc/server";
-import type { AppRouter } from "@acme/api";
-import { useAuth, UserButton } from "@clerk/nextjs";
-import Link from "next/link";
+// import { trpc } from "../utils/trpc";
+// import type { inferProcedureOutput } from "@trpc/server";
+// import type { AppRouter } from "@acme/api";
+// import { useAuth, UserButton } from "@clerk/nextjs";
+// import Link from "next/link";
+import { motion } from "framer-motion";
+import ResultRow from "../components/ResultRow";
+import { useState } from "react";
+// import { useFollowPointer } from "../hooks/useFollowPointer";
 
-const PostCard: React.FC<{
-  post: inferProcedureOutput<AppRouter["post"]["all"]>[number];
-}> = ({ post }) => {
-  return (
-    <div className="max-w-2xl rounded-lg border-2 border-gray-500 p-4 transition-all hover:scale-[101%]">
-      <h2 className="text-2xl font-bold text-[hsl(280,100%,70%)]">
-        {post.title}
-      </h2>
-      <p>{post.content}</p>
-    </div>
-  );
-};
+// const PostCard: React.FC<{
+//   post: inferProcedureOutput<AppRouter["post"]["all"]>[number];
+// }> = ({ post }) => {
+//   return (
+//     <div className="max-w-2xl rounded-lg border-2 border-gray-500 p-4 transition-all hover:scale-[101%]">
+//       <h2 className="text-2xl font-bold text-[hsl(280,100%,70%)]">
+//         {post.title}
+//       </h2>
+//       <p>{post.content}</p>
+//     </div>
+//   );
+// };
 
 const Home: NextPage = () => {
   // const postQuery = trpc.post.all.useQuery();
+
+  const [portalAnimation, setPortalAnimation] = useState(false);
+
+  // const ref = useRef(null);
+  // const { x, y } = useFollowPointer(ref);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -29,6 +38,14 @@ const Home: NextPage = () => {
     };
     const search = target.search.value;
     console.log(search);
+  };
+
+  const scrollToResults = () => {
+    const element = document.getElementById("results");
+    if (element) {
+      // 👇 Will scroll smoothly to the top of the next section
+      element.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
   return (
@@ -44,7 +61,28 @@ const Home: NextPage = () => {
             Show<span className="text-[#A8CC54]">Scouter</span>
           </h1>
           <div className="relative w-1/2">
-            <img src="/portal.gif" alt="Portal" className="w-full" />
+            <motion.img
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: portalAnimation ? 1.2 : 1 }}
+              transition={{
+                default: {
+                  duration: 2,
+                  ease: [0, 0.71, 0.2, 1.01],
+                },
+                scale: {
+                  type: "spring",
+                  damping: 5,
+                  stiffness: 100,
+                  restDelta: 0.001,
+                },
+              }}
+              onClick={() => {
+                setPortalAnimation(!portalAnimation);
+              }}
+              src="/portal.gif"
+              alt="Portal"
+              className="w-full cursor-pointer"
+            />
             <form
               onSubmit={handleSearch}
               className="absolute inset-y-1/2 flex w-full items-center space-x-4"
@@ -85,51 +123,81 @@ const Home: NextPage = () => {
           </div> */}
         </div>
       </main>
+      {/* <motion.img
+            ref={ref}
+            className="w-24"
+            src="/unicorn.gif"
+            animate={{ x, y }}
+            transition={{
+              type: "spring",
+              damping: 3,
+              stiffness: 50,
+              restDelta: 0.001,
+            }}
+          /> */}
+      <main
+        id="results"
+        className="flex h-screen flex-col bg-[url(/bg.gif)] text-white"
+      >
+        <h1 className="py-8 text-center text-5xl font-extrabold tracking-tight sm:text-[5rem]">
+          Show<span className="text-[#A8CC54]">Scouter</span>
+        </h1>
+        <motion.img
+          initial={{ x: -200 }}
+          transition={{ duration: 4 }}
+          whileInView={{ x: "60vw" }}
+          src="/spaceship.gif"
+          className="my-auto w-1/3"
+        />
+        <div>
+          <ResultRow title="hola" content="blblb" className="bg-black" />
+        </div>
+      </main>
     </>
   );
 };
 
 export default Home;
 
-const AuthShowcase: React.FC = () => {
-  const { isSignedIn } = useAuth();
-  const { data: secretMessage } = trpc.auth.getSecretMessage.useQuery(
-    undefined,
-    { enabled: !!isSignedIn },
-  );
+// const AuthShowcase: React.FC = () => {
+//   const { isSignedIn } = useAuth();
+//   const { data: secretMessage } = trpc.auth.getSecretMessage.useQuery(
+//     undefined,
+//     { enabled: !!isSignedIn },
+//   );
 
-  return (
-    <div className="flex flex-col items-center justify-center gap-4">
-      {isSignedIn && (
-        <>
-          <p className="text-center text-2xl text-white">
-            {secretMessage && (
-              <span>
-                {" "}
-                {secretMessage} click the user button!
-                <br />
-              </span>
-            )}
-          </p>
-          <div className="flex items-center justify-center">
-            <UserButton
-              appearance={{
-                elements: {
-                  userButtonAvatarBox: {
-                    width: "3rem",
-                    height: "3rem",
-                  },
-                },
-              }}
-            />
-          </div>
-        </>
-      )}
-      {!isSignedIn && (
-        <p className="text-center text-2xl text-white">
-          <Link href="/sign-in">Sign In</Link>
-        </p>
-      )}
-    </div>
-  );
-};
+//   return (
+//     <div className="flex flex-col items-center justify-center gap-4">
+//       {isSignedIn && (
+//         <>
+//           <p className="text-center text-2xl text-white">
+//             {secretMessage && (
+//               <span>
+//                 {" "}
+//                 {secretMessage} click the user button!
+//                 <br />
+//               </span>
+//             )}
+//           </p>
+//           <div className="flex items-center justify-center">
+//             <UserButton
+//               appearance={{
+//                 elements: {
+//                   userButtonAvatarBox: {
+//                     width: "3rem",
+//                     height: "3rem",
+//                   },
+//                 },
+//               }}
+//             />
+//           </div>
+//         </>
+//       )}
+//       {!isSignedIn && (
+//         <p className="text-center text-2xl text-white">
+//           <Link href="/sign-in">Sign In</Link>
+//         </p>
+//       )}
+//     </div>
+//   );
+// };
