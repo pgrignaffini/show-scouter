@@ -47,7 +47,7 @@ const Accordion = ({ i, expanded, setExpanded, show }: AccordionProps) => {
             }}
             transition={{ duration: 0.8, ease: [0.04, 0.62, 0.23, 0.98] }}
           >
-            <p className="mb-4">
+            <p className="mb-4 text-justify">
               This show is perfect for anyone who loves light-hearted comedy as
               it follows a group of local government employees in Pawnee,
               Indiana. It stars Amy Poehler as the lead and follows her

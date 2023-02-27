@@ -11,6 +11,7 @@ import Accordion from "../components/Accordion";
 import axios from "axios";
 import { useQuery } from "react-query";
 import { Refresh } from "../components/Refresh";
+import Spinner from "../components/Spinner";
 
 // import { useFollowPointer } from "../hooks/useFollowPointer";
 
@@ -38,22 +39,27 @@ const Home: NextPage = () => {
   // const postQuery = trpc.post.all.useQuery();
 
   const [expanded, setExpanded] = useState<false | number>(-1);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] =
+    useState(false);
 
   const fetchMovies = async () => {
+    setIsLoadingRecommendations(true);
+    // wait 3 seconds to simulate loading
+    await new Promise((resolve) => setTimeout(resolve, 3000));
     const res = await axios.get("/api/movies");
     return res.data;
   };
 
-  const { data: movies } = useQuery("movies", () => fetchMovies());
-
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const target = e.target as typeof e.target & {
-      search: { value: string };
-    };
-    const search = target.search.value;
-    console.log(search);
-  };
+  const { data: movies, refetch: fetchRecommendations } = useQuery(
+    "movies",
+    () => fetchMovies(),
+    {
+      onSuccess: () => {
+        setIsLoadingRecommendations(false);
+      },
+      enabled: false,
+    },
+  );
 
   const scrollToResults = () => {
     const element = document.getElementById("results");
@@ -61,6 +67,17 @@ const Home: NextPage = () => {
       // 👇 Will scroll smoothly to the top of the next section
       element.scrollIntoView({ behavior: "smooth" });
     }
+  };
+
+  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const target = e.target as typeof e.target & {
+      search: { value: string };
+    };
+    const search = target.search.value;
+    await fetchRecommendations();
+    scrollToResults();
+    console.log(search);
   };
 
   return (
@@ -107,20 +124,24 @@ const Home: NextPage = () => {
                 className="flex-1 rounded-full bg-slate-100 px-4 py-3 text-center text-slate-700 outline-none"
               />
               <button type="submit" className="rounded-full bg-[#0b600e] p-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="white"
-                  className="h-6 w-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                  />
-                </svg>
+                {isLoadingRecommendations ? (
+                  <Spinner />
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="white"
+                    className="h-6 w-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                    />
+                  </svg>
+                )}
               </button>
             </form>
           </div>
